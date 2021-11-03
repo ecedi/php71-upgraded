@@ -1,4 +1,4 @@
-FROM php:7.1-apache
+FROM php:7.4-apache
 
 RUN sed -ri -e 's!/var/www/html!/var/www/html/web!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/html!/var/www/html/web!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
@@ -21,7 +21,6 @@ RUN apt-get update && \
     libpng-dev \
     libfreetype6-dev \
     libssh2-1-dev \
-    libssh2-1 \
     rsync \
     && docker-php-ext-configure pdo_mysql \
     && docker-php-ext-install -j$(nproc) pdo_mysql \
@@ -35,12 +34,14 @@ RUN apt-get update && \
     && docker-php-ext-install -j$(nproc) gd \
     && npm install -g yarn
 
-RUN pecl install ssh2-1.1.2 xdebug-2.7.2 \
-    && docker-php-ext-enable ssh2 xdebug \
-    && echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
-    && echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+RUN pecl install xdebug-3.0.4 ssh2-1.3.1 \
+    && docker-php-ext-enable xdebug ssh2 \
+    && echo "xdebug.mode=debug" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.discover_client_host=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.idekey=ecedi" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.log_level=0" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 RUN wget -O composer.phar https://getcomposer.org/composer.phar \
     && mv composer.phar /usr/local/bin/composer \
